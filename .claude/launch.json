@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "fourward-dev",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["tools/build.mjs", "--watch", "--serve"],
+      "port": 5173
+    }
+  ]
+}

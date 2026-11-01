@@ -1,0 +1,66 @@
+import type { SpriteDef } from '../sprites.ts';
+
+// Small extra UI glyphs drawn by the lead (not part of the art batches).
+export const SPRITES_EXTRA: Record<string, SpriteDef> = {
+  // flanker that circles to your weakest side
+  goblin: {
+    rows: [
+      '................',
+      '..kk........kk..',
+      '..kek......kek..',
+      '..kelkkkkkklek..',
+      '...kellllleek...',
+      '...kleeeeeeEk...',
+      '...keykeeykEk...',
+      '...keeeeeeeEk...',
+      '....keRRRRek....',
+      '.....kkkkkk.....',
+      '....knNNNNnk.kk.',
+      '...keknNNnkekgwk',
+      '...kEkNNNNkEkgk.',
+      '....kknnnnkkkk..',
+      '....kNNk.kNNk...',
+      '....kkk...kkk...',
+    ],
+  },
+  ui_wait: {
+    rows: [
+      '................',
+      '...kkkkkkkkkk...',
+      '...kYyyyyyyYk...',
+      '...kkkkkkkkkk...',
+      '....kwzzzzwk....',
+      '....kwzzzzwk....',
+      '.....kwzzwk.....',
+      '......kzzk......',
+      '......kwwk......',
+      '.....kwzwwk.....',
+      '....kwwzzwwk....',
+      '....kwzzzzwk....',
+      '...kkkkkkkkkk...',
+      '...kYyyyyyyYk...',
+      '...kkkkkkkkkk...',
+      '................',
+    ],
+  },
+  ui_core: {
+    rows: [
+      '................',
+      '......kkkk......',
+      '.....kppppk.....',
+      '....kpmmppPk....',
+      '...kpmwmpppPk...',
+      '...kpmmppppPk...',
+      '...kppppppPPk...',
+      '...kpppppPPPk...',
+      '....kpppPPPk....',
+      '.....kPPPPk.....',
+      '......kkkk......',
+      '................',
+      '................',
+      '................',
+      '................',
+      '................',
+    ],
+  },
+};

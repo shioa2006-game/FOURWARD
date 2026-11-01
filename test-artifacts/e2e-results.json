@@ -1,0 +1,202 @@
+[
+  {
+    "name": "desktop: title screen shown",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "name": "desktop: run starts from the kit button",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "name": "desktop: arrow keys and WASD both act",
+    "ok": true,
+    "detail": "turns 0 -> 8"
+  },
+  {
+    "name": "desktop: Z rewinds the last action once per floor",
+    "ok": true,
+    "detail": "{\"tA\":8,\"turn\":8,\"left\":0}"
+  },
+  {
+    "name": "desktop: reaching the stairs opens the between-floor screen",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "name": "desktop: tapping two slots swaps them",
+    "ok": true,
+    "detail": "[\"flask\",null,\"sword\",null]"
+  },
+  {
+    "name": "desktop: Enter departs to B2",
+    "ok": true,
+    "detail": "{\"floor\":2,\"scr\":\"game\"}"
+  },
+  {
+    "name": "desktop: reload offers つづきから",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "name": "desktop: continue restores the floor",
+    "ok": true,
+    "detail": "floor 2"
+  },
+  {
+    "name": "desktop: Esc opens the menu",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "name": "desktop: guide opens",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "name": "desktop: death shows the game-over screen",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "name": "desktop: game over offers a checkpoint retry",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "name": "desktop: retry restarts alive with full hearts",
+    "ok": true,
+    "detail": "{\"status\":\"play\",\"hp\":5,\"max\":5}"
+  },
+  {
+    "name": "desktop: victory screen",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "name": "desktop: no console errors",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "name": "phone-portrait: tap starts a run",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "name": "phone-portrait: pad buttons on screen",
+    "ok": true,
+    "detail": "[[142,506],[254,618],[142,729],[31,618]]"
+  },
+  {
+    "name": "phone-portrait: pad buttons >= 44px",
+    "ok": true,
+    "detail": "[105,105,105,105]"
+  },
+  {
+    "name": "phone-portrait: no page overflow",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "name": "phone-portrait: tapping the cross pad acts",
+    "ok": true,
+    "detail": "turns 0 -> 5"
+  },
+  {
+    "name": "phone-portrait: swipe on the map acts",
+    "ok": true,
+    "detail": "turns 5 -> 6"
+  },
+  {
+    "name": "phone-portrait: HUD and pad do not overlap",
+    "ok": true,
+    "detail": "{\"topBottom\":52,\"padTop\":506.40625,\"padLeft\":31.203125}"
+  },
+  {
+    "name": "phone-portrait: no console errors",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "name": "phone-small: tap starts a run",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "name": "phone-small: pad buttons on screen",
+    "ok": true,
+    "detail": "[[139,374],[227,461],[139,549],[52,461]]"
+  },
+  {
+    "name": "phone-small: pad buttons >= 44px",
+    "ok": true,
+    "detail": "[81,81,81,81]"
+  },
+  {
+    "name": "phone-small: no page overflow",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "name": "phone-small: tapping the cross pad acts",
+    "ok": true,
+    "detail": "turns 0 -> 5"
+  },
+  {
+    "name": "phone-small: swipe on the map acts",
+    "ok": true,
+    "detail": "turns 5 -> 6"
+  },
+  {
+    "name": "phone-small: HUD and pad do not overlap",
+    "ok": true,
+    "detail": "{\"topBottom\":52,\"padTop\":374,\"padLeft\":52}"
+  },
+  {
+    "name": "phone-small: no console errors",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "name": "phone-landscape: tap starts a run",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "name": "phone-landscape: pad buttons on screen",
+    "ok": true,
+    "detail": "[[723,212],[779,269],[723,325],[666,269]]"
+  },
+  {
+    "name": "phone-landscape: pad buttons >= 44px",
+    "ok": true,
+    "detail": "[51,51,51,51]"
+  },
+  {
+    "name": "phone-landscape: no page overflow",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "name": "phone-landscape: tapping the cross pad acts",
+    "ok": true,
+    "detail": "turns 0 -> 5"
+  },
+  {
+    "name": "phone-landscape: swipe on the map acts",
+    "ok": true,
+    "detail": "turns 5 -> 6"
+  },
+  {
+    "name": "phone-landscape: HUD and pad do not overlap",
+    "ok": true,
+    "detail": "{\"topBottom\":52,\"padTop\":212.203125,\"padLeft\":666.203125}"
+  },
+  {
+    "name": "phone-landscape: no console errors",
+    "ok": true,
+    "detail": ""
+  }
+]
