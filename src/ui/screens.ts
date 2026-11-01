@@ -16,6 +16,8 @@ export interface Meta {
 export interface ScreenHandlers {
   onNew: (kit: Kit) => void;
   onContinue: () => void;
+  /** discard the saved run (and its checkpoint) so the next start is a fresh B1 */
+  onReset: () => void;
   onRetryCheckpoint: () => void;
   onTitle: () => void;
   onResume: () => void;
@@ -76,7 +78,9 @@ export class Screens {
         <div class="logo-cross">${crossHtml(['sword', 'shield', 'flask', 'axe'], 'spin')}</div>
         <h1 class="logo">FOUR<span>WARD</span></h1>
         <p class="tagline">その一歩が、武器になる。</p>
-        ${hasSave ? `<button class="btn primary" data-act="continue">つづきから <small>B${saveFloor}</small></button>` : ''}
+        ${hasSave ? `<button class="btn primary" data-act="continue">つづきから <small>B${saveFloor}</small></button>
+        <button class="btn ghost reset-btn" data-act="reset">↺ リセット <small>B1から</small></button>
+        <p class="kits-label">はじめから（新しいダンジョン）</p>` : ''}
         <div class="kits">${kits}</div>
         <div class="keys"><span class="kc">↑</span><span class="kc">→</span><span class="kc">↓</span><span class="kc">←</span><span class="sep">/</span><span class="kc">W</span><span class="kc">A</span><span class="kc">S</span><span class="kc">D</span><span class="sep">/</span><span class="tap">👆</span></div>
         <div class="title-foot">
@@ -90,10 +94,31 @@ export class Screens {
     this.ov.querySelectorAll<HTMLButtonElement>('.kit').forEach((b) =>
       b.addEventListener('click', () => {
         if (b.disabled) return;
-        this.h.onNew(b.dataset.kit as Kit);
+        const kit = b.dataset.kit as Kit;
+        if (!hasSave) return this.h.onNew(kit);
+        this.confirmReset(saveFloor, () => this.h.onNew(kit), () => this.title(meta, hasSave, saveFloor));
       }),
     );
+    this.ov.querySelector<HTMLButtonElement>('[data-act="reset"]')?.addEventListener('click', () =>
+      this.confirmReset(saveFloor, () => this.h.onReset(), () => this.title(meta, hasSave, saveFloor)),
+    );
     this.bindCommon(meta, hasSave, saveFloor);
+  }
+
+  /** Starting over throws away the saved run, so ask once. */
+  private confirmReset(saveFloor: number, yes: () => void, no: () => void): void {
+    this.show(
+      'confirm',
+      `<div class="panel confirm">
+        <p class="confirm-text">B${saveFloor}のつづきは消えます。<br>B1から新しいダンジョンで始めますか？</p>
+        <div class="row">
+          <button class="btn ghost" data-ans="no">もどる</button>
+          <button class="btn primary" data-ans="yes">はじめから</button>
+        </div>
+      </div>`,
+    );
+    this.ov.querySelector('[data-ans="yes"]')!.addEventListener('click', yes);
+    this.ov.querySelector('[data-ans="no"]')!.addEventListener('click', no);
   }
 
   private bindCommon(meta?: Meta, hasSave?: boolean, saveFloor?: number): void {

@@ -126,6 +126,21 @@ async function session(label, contextOpts) {
     check('desktop: continue restores the floor', fl === 2, `floor ${fl}`);
   }
 
+  // title reset: cancel keeps the save, confirm discards it
+  await page.reload();
+  await page.waitForFunction(() => !!window.__FOURWARD__);
+  await page.click('[data-act="reset"]');
+  await page.click('[data-ans="no"]');
+  check('desktop: reset → もどる keeps つづきから', (await page.locator('[data-act="continue"]').count()) === 1);
+  await page.click('[data-act="reset"]');
+  await page.click('[data-ans="yes"]');
+  await sleep(100);
+  check('desktop: reset → はじめから clears the save', (await page.locator('[data-act="continue"]').count()) === 0 && (await page.evaluate(() => window.__FOURWARD__.screen())) === 'title');
+  await page.click('.kit[data-kit="knight"]');
+  await sleep(200);
+  const fresh = await page.evaluate(() => ({ floor: window.__FOURWARD__.state().floor, turn: window.__FOURWARD__.state().turn }));
+  check('desktop: after reset a new run starts at B1', fresh.floor === 1 && fresh.turn === 0, JSON.stringify(fresh));
+
   // pause menu + guide
   await page.keyboard.press('Escape');
   await sleep(100);

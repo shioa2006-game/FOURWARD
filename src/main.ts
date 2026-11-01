@@ -94,6 +94,11 @@ class Game {
     this.screens = new Screens(this.ui, {
       onNew: (kit) => this.startNew(kit),
       onContinue: () => this.continueRun(),
+      onReset: () => {
+        store.del(SAVE_KEY);
+        store.del(CP_KEY);
+        this.toTitle();
+      },
       onRetryCheckpoint: () => this.retryCheckpoint(),
       onTitle: () => this.toTitle(),
       onResume: () => this.screens.close(),
@@ -120,6 +125,11 @@ class Game {
     window.addEventListener('keydown', unlockAudio, { capture: true });
     window.addEventListener('resize', () => this.layout());
     window.addEventListener('orientationchange', () => setTimeout(() => this.layout(), 200));
+    // iOS Safari (esp. 26's floating toolbar) can leave fixed content under the browser
+    // chrome or scrolled off the top: follow the visible area instead.
+    window.visualViewport?.addEventListener('resize', () => this.layout());
+    window.visualViewport?.addEventListener('scroll', () => this.fitViewport());
+    window.addEventListener('scroll', () => { if (window.scrollX || window.scrollY) window.scrollTo(0, 0); });
     this.renderer.onDamageShown = (ev) => {
       if (ev.id === 0 && this.state) {
         this.hpShown = null;
@@ -133,7 +143,24 @@ class Game {
     (window as any).__FOURWARD__ = this.testApi();
   }
 
+  /** Pin #app to the area the player can actually see (visualViewport), not the layout viewport. */
+  fitViewport(): void {
+    const app = document.getElementById('app') as HTMLElement;
+    const vv = window.visualViewport;
+    // When the player pinch-zooms, keep the normal layout rather than chasing the zoom.
+    const use = vv && Math.abs(vv.scale - 1) < 0.01;
+    const w = use ? vv.width : document.documentElement.clientWidth;
+    const h = use ? vv.height : document.documentElement.clientHeight;
+    app.style.top = `${use ? vv.offsetTop : 0}px`;
+    app.style.left = `${use ? vv.offsetLeft : 0}px`;
+    app.style.width = `${w}px`;
+    app.style.height = `${h}px`;
+    document.documentElement.style.setProperty('--vh', `${h / 100}px`);
+    document.documentElement.style.setProperty('--vw', `${w / 100}px`);
+  }
+
   layout(): void {
+    this.fitViewport();
     this.renderer.setInsets(this.hud.topInset(), this.hud.padInset(), 0, this.hud.rightInset());
     this.ui.style.setProperty('--hud-bottom', `${this.hud.topInset()}px`);
   }

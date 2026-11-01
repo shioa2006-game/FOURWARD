@@ -8,7 +8,7 @@
   --muted: #9a93b8;
   --red: #ef4a5a;
   --green: #a6e05a;
-  --pad: min(84vw, 330px, 40vh);
+  --pad: min(calc(var(--vw, 1vw) * 84), 330px, calc(var(--vh, 1vh) * 40));
   --safe-b: env(safe-area-inset-bottom, 0px);
   --safe-t: env(safe-area-inset-top, 0px);
   color-scheme: dark;
@@ -28,7 +28,7 @@ html, body {
   touch-action: none;
   overscroll-behavior: none;
 }
-#app { position: fixed; inset: 0; }
+#app { position: fixed; inset: 0; overflow: hidden; } /* main.ts pins it to visualViewport */
 #game { position: absolute; inset: 0; width: 100%; height: 100%; display: block; image-rendering: pixelated; }
 #ui { position: absolute; inset: 0; pointer-events: none; }
 #ui button { pointer-events: auto; font: inherit; color: inherit; }
@@ -77,7 +77,7 @@ button:focus-visible { outline: 2px solid #6fe2f0; outline-offset: 3px; }
 }
 @media (max-height: 580px) and (orientation: landscape) {
   .card .diagram { display: none; }
-  .preview-panel, .card { max-height: calc(100vh - 80px); overflow-y: auto; touch-action: pan-y; pointer-events: auto; }
+  .preview-panel, .card { max-height: calc(var(--vh, 1vh) * 100 - 80px); overflow-y: auto; touch-action: pan-y; pointer-events: auto; }
   .lesson { max-width: 280px; }
 }
 
@@ -276,7 +276,7 @@ button:focus-visible { outline: 2px solid #6fe2f0; outline-offset: 3px; }
 
 /* landscape / desktop: pad bottom-right, a bit smaller */
 @media (orientation: landscape) {
-  :root { --pad: min(250px, 42vh); }
+  :root { --pad: min(250px, calc(var(--vh, 1vh) * 42)); }
   .pad { left: auto; right: calc(14px + env(safe-area-inset-right, 0px)); transform: none; bottom: calc(14px + var(--safe-b)); }
   .rotating .pad { animation: padSpinL 0.38s cubic-bezier(0.3, 1.3, 0.5, 1); }
   @keyframes padSpinL { 0% { transform: rotate(-90deg); } 100% { transform: rotate(0); } }
@@ -429,6 +429,11 @@ button:focus-visible { outline: 2px solid #6fe2f0; outline-offset: 3px; }
   font-weight: 700;
 }
 .sep { opacity: 0.4; margin: 0 4px; }
+.reset-btn { min-width: 0; padding: 9px 18px; font-size: 15px; }
+.kits-label { margin: 6px 0 -4px; font-size: 13px; letter-spacing: 2px; color: var(--muted); }
+.confirm { max-width: min(360px, 92vw); text-align: center; }
+.confirm-text { margin: 0; font-size: 16px; line-height: 1.8; }
+.confirm .row .btn { min-width: 0; flex: 1; padding: 12px 14px; font-size: 16px; letter-spacing: 1px; white-space: nowrap; }
 .title-foot { display: flex; gap: 10px; align-items: center; margin-top: 4px; }
 .clears, .best { color: var(--gold); font-weight: 800; }
 .btn {

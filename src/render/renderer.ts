@@ -137,10 +137,9 @@ export class Renderer {
     this.H = h;
     const vw = w - (this.insets.left + this.insets.right) * dpr;
     const vh = h - (this.insets.top + this.insets.bottom) * dpr;
-    const portrait = vh > vw;
-    const targetCols = portrait ? 9.5 : 15;
-    const targetRows = portrait ? 9 : 9.5;
-    let ts = Math.min(vw / targetCols, vh / targetRows);
+    // One rule for every shape: at least 12 columns and 9.5 rows of map. (A separate
+    // portrait rule zoomed tall phones in so far that rooms no longer fit.)
+    let ts = Math.min(vw / 12, vh / 9.5);
     const scale = ts / 16;
     ts = scale < 6 ? Math.max(2, Math.floor(scale)) * 16 : Math.floor(ts);
     this.ts = Math.max(32, ts);

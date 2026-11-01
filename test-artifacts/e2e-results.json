@@ -45,6 +45,21 @@
     "detail": "floor 2"
   },
   {
+    "name": "desktop: reset → もどる keeps つづきから",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "name": "desktop: reset → はじめから clears the save",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "name": "desktop: after reset a new run starts at B1",
+    "ok": true,
+    "detail": "{\"floor\":1,\"turn\":0}"
+  },
+  {
     "name": "desktop: Esc opens the menu",
     "ok": true,
     "detail": ""

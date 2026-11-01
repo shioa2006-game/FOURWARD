@@ -158,16 +158,18 @@ export class Hud {
   /** Height of the pad region (CSS px) so the map can keep the hero above it. */
   padInset(): number {
     const r = this.pad.getBoundingClientRect();
-    const portrait = window.innerHeight > window.innerWidth;
+    const box = this.root.getBoundingClientRect();
+    const portrait = box.height > box.width;
     const top = !this.previewPanel.classList.contains('hidden') ? Math.min(r.top, this.previewPanel.getBoundingClientRect().top) : r.top;
-    return portrait ? Math.max(0, window.innerHeight - top) : 0;
+    return portrait ? Math.max(0, box.bottom - top) : 0;
   }
   topInset(): number {
-    return this.top.getBoundingClientRect().bottom;
+    return this.top.getBoundingClientRect().bottom - this.root.getBoundingClientRect().top;
   }
   rightInset(): number {
-    if (window.innerWidth <= window.innerHeight || this.previewPanel.classList.contains('hidden')) return 0;
-    return Math.max(0, window.innerWidth - this.previewPanel.getBoundingClientRect().left + 12);
+    const box = this.root.getBoundingClientRect();
+    if (box.width <= box.height || this.previewPanel.classList.contains('hidden')) return 0;
+    return Math.max(0, box.right - this.previewPanel.getBoundingClientRect().left + 12);
   }
 
   update(s: GameState, previews: Preview[] | null, armed: boolean[], hpShown: number | null = null): void {
