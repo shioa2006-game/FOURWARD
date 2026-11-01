@@ -21,6 +21,27 @@ export const SPRITES_HERO_UI: Record<string, SpriteDef> = {
       '................',
     ],
   },
+  // "this move kills you": a heart split by a crack (never the enemy-kill skull)
+  ui_heart_broken: {
+    rows: [
+      '................',
+      '................',
+      '..kkkk...k.kkk..',
+      '.krrrrk.kk.rrrk.',
+      '.krwwrrkk.krrRk.',
+      '.krwrrrrk.krrRk.',
+      '.krrrrrk.krrrRk.',
+      '.krrrrrrk.krrRk.',
+      '..krrrrrk.krRk..',
+      '...krrrk.krrk...',
+      '....krrrk.kk....',
+      '.....krrk.k.....',
+      '......kk.k......',
+      '................',
+      '................',
+      '................',
+    ],
+  },
   ui_heart_empty: {
     rows: [
       '................',

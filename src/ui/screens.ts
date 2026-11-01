@@ -35,6 +35,12 @@ function crossHtml(items: (string | null)[], cls = ''): string {
   return `<div class="mini-cross ${cls}"><span class="mc0">${cell(0)}</span><span class="mc1">${cell(1)}</span><span class="mc2">${cell(2)}</span><span class="mc3">${cell(3)}</span><span class="mcc"><img src="${spriteUrl('hero', 3)}" alt=""></span></div>`;
 }
 
+/** Kills and turns carry over retries, so say they are run totals. */
+function runStats(s: GameState): string {
+  const r = s.stats.retries;
+  return `<div class="stats2"><span class="total">通算</span><span title="撃破数">☠ ${s.stats.kills}</span><span title="ターン数">⏱ ${s.stats.turns}</span>${r ? `<span title="再挑戦の回数">↺ ${r}</span>` : ''}</div>`;
+}
+
 export class Screens {
   root: HTMLElement;
   ov: HTMLElement;
@@ -169,7 +175,8 @@ export class Screens {
         </div>
         <div class="g-row"><div class="g-tile danger"><i></i></div><div class="g-txt">ここで手番を終えると攻撃される（●＝ダメージ）</div></div>
         <div class="g-row"><div class="g-tile later">2</div><div class="g-txt">数字のターン後に爆発</div></div>
-        <div class="g-row">${ic('ui_skull')}<div class="g-txt">その向きで倒せる</div>${ic('ui_danger')}<div class="g-txt">ダメージを受ける</div></div>
+        <div class="g-row">${ic('ui_skull')}<div class="g-txt">右上：その向きで敵を倒せる</div></div>
+        <div class="g-row">${ic('ui_danger')}<div class="g-txt">左上：ダメージを受ける</div>${ic('ui_heart_broken')}<div class="g-txt">左上：自分が倒れる</div></div>
         <div class="g-row">${ic('ui_wait')}<div class="g-txt">進めない向き＝その場で構える（1ターン待つ）</div></div>
         <div class="g-row">${ic('prop_pedestal')}<span class="arrow">◀</span>${ic('hero')}<div class="g-txt">押した向きの装備と交換</div></div>
           <div class="g-row">${ic('ui_coin')}<div class="g-txt">GOLDは金床で使う。B2・B5・B8の強化費用は4・6・8 GOLD</div></div>
@@ -187,6 +194,7 @@ export class Screens {
   // ---------------------------------------------------------------- between floors
 
   arrangeSel = -1;
+  arrangeSwap: [number, number] | null = null;
   arrangeState: GameState | null = null;
   arrangeDone: (() => void) | null = null;
 
@@ -195,6 +203,7 @@ export class Screens {
     this.arrangeState = s;
     this.arrangeDone = onDone;
     this.arrangeSel = -1;
+    this.arrangeSwap = null;
     const zone = Math.floor((s.floor - 1) / 3);
     const pool = FLOORS[s.floor - 1]?.pool ?? [];
     const boss = FLOORS[s.floor - 1]?.boss;
@@ -206,7 +215,7 @@ export class Screens {
         <div class="ar-head"><b>B${s.floor}</b><span class="z${zone}">${ZONE_NAMES[zone]}</span></div>
         <div class="ar-foes ${boss ? 'boss' : ''}">${foeHtml}</div>
         <div class="ar-cross"></div>
-        <div class="ar-hint"><span class="kc">▲</span><span class="arrow">⇄</span><span class="kc">▶</span></div>
+        <div class="ar-hint"></div>
         <button class="btn primary" data-act="go">▼ 降りる</button>
       </div>`,
     );
@@ -220,6 +229,12 @@ export class Screens {
     const box = this.ov.querySelector('.ar-cross') as HTMLElement;
     if (!box) return;
     box.innerHTML = '';
+    // the hint follows the selection, so a finished swap reads differently from a pending one
+    const hint = this.ov.querySelector('.ar-hint') as HTMLElement;
+    const key = (d: number) => `<span class="kc">${'▲▶▼◀'[d]}</span>`;
+    if (this.arrangeSel >= 0) hint.innerHTML = `${key(this.arrangeSel)}<span>と入れ替える方向を選ぶ</span>`;
+    else if (this.arrangeSwap) hint.innerHTML = `${key(this.arrangeSwap[0])}<span class="arrow">⇄</span>${key(this.arrangeSwap[1])}<span>入れ替えました</span>`;
+    else hint.innerHTML = '<span>2つ選ぶと入れ替え</span>';
     for (let d = 0; d < 4; d++) {
       const it = s.player.slots[d];
       const b = document.createElement('button');
@@ -238,12 +253,16 @@ export class Screens {
   arrangeKey(d: 0 | 1 | 2 | 3): void {
     const s = this.arrangeState;
     if (!s) return;
-    if (this.arrangeSel < 0) this.arrangeSel = d;
+    if (this.arrangeSel < 0) {
+      this.arrangeSel = d;
+      this.arrangeSwap = null;
+    }
     else if (this.arrangeSel === d) this.arrangeSel = -1;
     else {
       const sl = s.player.slots;
       const a = this.arrangeSel;
       [sl[a], sl[d]] = [sl[d], sl[a]];
+      this.arrangeSwap = [a, d];
       this.arrangeSel = -1;
     }
     this.renderArrange();
@@ -269,7 +288,7 @@ export class Screens {
           <div>${killerIcon}</div>
           <div>${crossHtml(s.player.slots.map((it) => (it ? it.id : null)))}</div>
         </div>
-        <div class="stats2"><span>☠ ${s.stats.kills}</span><span>⏱ ${s.stats.turns}</span></div>
+        ${runStats(s)}
         ${canRetry ? `<button class="btn primary" data-act="retry">B${s.checkpointFloor} から再挑戦</button>` : ''}
         <button class="btn ${canRetry ? 'ghost' : 'primary'}" data-act="title">タイトルへ</button>
       </div>`,
@@ -286,7 +305,7 @@ export class Screens {
         <div class="stats">
           <div>${crossHtml(s.player.slots.map((it) => (it ? it.id : null)))}</div>
         </div>
-        <div class="stats2"><span>☠ ${s.stats.kills}</span><span>⏱ ${s.stats.turns}</span><span>↺ ${s.stats.retries}</span></div>
+        ${runStats(s)}
         <button class="btn primary" data-act="title">タイトルへ</button>
       </div>`,
     );

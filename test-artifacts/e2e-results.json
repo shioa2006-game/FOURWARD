@@ -27,7 +27,7 @@
   {
     "name": "desktop: tapping two slots swaps them",
     "ok": true,
-    "detail": "[\"flask\",null,\"sword\",null]"
+    "detail": "[\"flask\",null,\"sword\",\"spear\"]"
   },
   {
     "name": "desktop: Enter departs to B2",
@@ -83,6 +83,11 @@
     "name": "desktop: retry restarts alive with full hearts",
     "ok": true,
     "detail": "{\"status\":\"play\",\"hp\":5,\"max\":5}"
+  },
+  {
+    "name": "desktop: retry loads this run, not another tab's",
+    "ok": true,
+    "detail": "{\"own\":{\"seed\":1371992352,\"cp\":1},\"back\":{\"seed\":1371992352,\"floor\":1}}"
   },
   {
     "name": "desktop: victory screen",

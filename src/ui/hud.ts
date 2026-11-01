@@ -35,6 +35,17 @@ const THEM_ICON: Record<string, string> = {
   chest: 'ui_coin',
 };
 
+const THEM_LABEL: Record<string, string> = {
+  kill: '撃破',
+  hit: '攻撃が当たる',
+  heal: '回復',
+  swap: '装備を交換',
+  stairs: '次の階へ',
+  upgrade: '★強化',
+  brace: 'その場で構える',
+  chest: 'GOLD入手',
+};
+
 function el<K extends keyof HTMLElementTagNameMap>(tag: K, cls = '', parent?: HTMLElement): HTMLElementTagNameMap[K] {
   const e = document.createElement(tag);
   if (cls) e.className = cls;
@@ -242,7 +253,9 @@ export class Hud {
       // top-left: what happens to YOU, top-right: what happens to THEM / the world
       const yk = pv ? pv.you : 'none';
       if (pv && yk !== 'none') {
-        (you.querySelector('img') as HTMLImageElement).src = spriteUrl(yk === 'death' ? 'ui_skull' : 'ui_danger', 3);
+        const yImg = you.querySelector('img') as HTMLImageElement;
+        yImg.src = spriteUrl(yk === 'death' ? 'ui_heart_broken' : 'ui_danger', 3);
+        yImg.alt = yk === 'death' ? 'この方向で倒れる' : `被ダメージ${pv.dmgTaken}`;
         (you.querySelector('b') as HTMLElement).textContent = yk === 'death' ? '' : `-${pv.dmgTaken}`;
         you.className = `badge you b-${yk}`;
         you.style.display = 'flex';
@@ -251,6 +264,7 @@ export class Hud {
       const ti = THEM_ICON[tk];
       if (ti) {
         them.src = spriteUrl(ti, 3);
+        them.alt = THEM_LABEL[tk] ?? '';
         them.className = `badge them b-${tk}`;
         them.style.display = 'block';
       } else them.style.display = 'none';
@@ -362,8 +376,8 @@ export class Hud {
     close.addEventListener('click', () => this.hideCard());
   }
 
-  showAnvil(s: GameState, pr: Prop, dir?: Dir): void {
-    this.showNote('金床 · ★強化', anvilText(s, pr, dir));
+  showAnvil(s: GameState, pr: Prop, dir?: Dir, awaitingConfirm = false): void {
+    this.showNote('金床 · ★強化', anvilText(s, pr, dir) + (awaitingConfirm ? '\nもう一度同じ方向を押すと強化します。' : ''));
   }
 
   setPreview(active: boolean, s?: GameState, pv?: Preview): void {
@@ -385,7 +399,7 @@ export class Hud {
     if (pv?.valid) {
       const outcome = el('div', 'preview-outcome', this.previewPanel);
       outcome.classList.toggle('danger', pv.dmgTaken > 0);
-      outcome.textContent = pv.you === 'death' ? '☠ この行動で倒れます' : `被ダメージ ${pv.dmgTaken}${pv.heal ? ` ／ 回復 +${pv.heal}` : ''}${pv.killIds.length ? ` ／ 撃破 ${pv.killIds.length}` : ''}`;
+      outcome.textContent = pv.you === 'death' ? '💔 この行動で倒れます' : `被ダメージ ${pv.dmgTaken}${pv.heal ? ` ／ 回復 +${pv.heal}` : ''}${pv.killIds.length ? ` ／ 撃破 ${pv.killIds.length}` : ''}`;
       if (pv.dest && pv.actionDest && (pv.dest.x !== pv.actionDest.x || pv.dest.y !== pv.actionDest.y)) {
         el('div', 'preview-copy', this.previewPanel).textContent = '赤い点線は、敵の押し出し等を受けた後の位置。';
       }

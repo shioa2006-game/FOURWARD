@@ -414,7 +414,7 @@ test('a room cleared by a fall still drops its heart on solid ground', () => {
   assert.notEqual(s.map.tiles[heart!.y * s.map.w + heart!.x], T.Pit);
 });
 
-test('knight below a hero pinned to the wall: sidestep, it follows and bares its flank', () => {
+test('knight below a hero pinned to the wall: sidestep, it follows your footsteps and bares its flank', () => {
   // the reported situation: wall above, knight right below facing up
   const s = scene(['#########', '#...@...#', '#...K...#', '#.......#', '#.......#', '#########'], ['spear', 'axe', 'sword', 'hammer']);
   s.player.slots[UP]!.star = 1;
@@ -425,11 +425,26 @@ test('knight below a hero pinned to the wall: sidestep, it follows and bares its
   const r0 = act(s, DOWN);
   assert.ok(r0.events.some((e) => e.t === 'block' && e.id === k.id));
   assert.equal(k.hp, 3);
-  // step aside: the knight walks after the hero and keeps the shield the way it walked
+  // step aside: the knight walks into the tile the hero left, shield the way it walked
   act(s, RIGHT);
-  assert.equal(k.y, s.player.y + 1, 'knight is below the hero again');
-  assert.notEqual(k.facing, UP, 'but its shield no longer faces the hero');
+  assert.deepEqual([k.x, k.y], [s.player.x - 1, s.player.y], 'knight is now on the left side');
+  assert.equal(k.facing, UP, 'its shield faces the wall, not the hero');
   const hp = k.hp;
+  act(s, LEFT);
+  assert.ok(!s.units.includes(k) || k.hp < hp, 'the hammer lands on its flank');
+});
+
+test('a chaser below an unarmed side follows your footsteps, so you can swing it round to the sword', () => {
+  // the play-test lock: wall above, slime right below, only the sword (up) can hit it
+  const s = scene(['#########', '#...@...#', '#...S...#', '#.......#', '#.......#', '#########'], ['sword', null, 'flask', null]);
+  const sl = unit(s, 'slime')!;
+  s.player.hp = s.player.maxHp;
+  act(s, LEFT);
+  assert.deepEqual([sl.x, sl.y], [s.player.x + 1, s.player.y], 'it takes the tile the hero left (right side)');
+  assert.equal(s.player.hp, s.player.maxHp, 'stepping away is still safe');
   act(s, DOWN);
-  assert.ok(!s.units.includes(k) || k.hp < hp, 'the sword lands on its flank');
+  assert.deepEqual([sl.x, sl.y], [s.player.x, s.player.y - 1], 'stepping down brings it above the hero');
+  assert.equal(s.player.hp, s.player.maxHp);
+  act(s, UP);
+  assert.ok(!s.units.includes(sl), 'the sword finishes it');
 });

@@ -152,7 +152,17 @@ async function session(label, contextOpts) {
   await page.click('[data-act="back"]');
   await page.click('[data-act="resume"]');
 
-  // game over + retry from checkpoint
+  // game over + retry from checkpoint; another tab overwrites the shared checkpoint with its own run first
+  const own = await page.evaluate(() => {
+    const st = window.__FOURWARD__.state();
+    const key = Object.keys(localStorage).find((k) => k.startsWith('fourward.checkpoint'));
+    const other = JSON.parse(localStorage.getItem(key));
+    other.seed += 1;
+    other.floor = 4;
+    other.checkpointFloor = 4;
+    localStorage.setItem(key, JSON.stringify(other));
+    return { seed: st.seed, cp: st.checkpointFloor };
+  });
   await page.evaluate(() => window.__FOURWARD__.forceDeath());
   await sleep(1400);
   check('desktop: death shows the game-over screen', (await page.evaluate(() => window.__FOURWARD__.screen())) === 'over');
@@ -164,6 +174,8 @@ async function session(label, contextOpts) {
     await sleep(200);
     const st = await page.evaluate(() => ({ status: window.__FOURWARD__.state().status, hp: window.__FOURWARD__.state().player.hp, max: window.__FOURWARD__.state().player.maxHp }));
     check('desktop: retry restarts alive with full hearts', st.status === 'play' && st.hp === st.max, JSON.stringify(st));
+    const back = await page.evaluate(() => ({ seed: window.__FOURWARD__.state().seed, floor: window.__FOURWARD__.state().floor }));
+    check("desktop: retry loads this run, not another tab's", back.seed === own.seed && back.floor === own.cp, JSON.stringify({ own, back }));
   }
 
   // victory screen

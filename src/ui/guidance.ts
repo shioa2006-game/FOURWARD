@@ -7,7 +7,7 @@ import { ITEMS } from '../core/content.ts';
 
 export const ITEM_RULES: Record<ItemId, string> = {
   sword: '1歩進んで、その先1マスを攻撃。敵や壁で止まっても攻撃。',
-  axe: '前方3マスを攻撃してから、1歩進む。',
+  axe: '正面と斜め前2マス（横並び3マス）を攻撃してから、1歩進む。',
   hammer: '1歩進んで攻撃。敵を2マス押し、衝突や穴を狙える。',
   spear: '射程内に敵・壊せる物があれば、動かず攻撃。なければ1歩。',
   fire: '5マス以内の対象へ、動かず炎を放つ。対象がなければ1歩。',
@@ -58,7 +58,7 @@ export function nextLesson(s: GameState, visible: Set<number>, seen: Set<string>
     { id: 'look', when: s.floor === 1 && s.turn > 0, title: 'まずは「先読み」で比べよう', text: '先読み → 方向を選ぶと、移動先と攻撃範囲が表示されます。「この方向へ」で実行。確認中はターンが進みません。' },
     { id: 'danger', when: s.units.some((u) => u.awake && visible.has(u.y * s.map.w + u.x)), title: '赤い床は、敵の攻撃予告', text: '先読みの「被ダメージ」で反撃まで確認。壁に向かって押しても1ターン使うので注意。↶で各階1回だけ戻せます。' },
     { id: 'knight', when: s.units.some((u) => u.kind === 'knight' && u.awake && visible.has(u.y * s.map.w + u.x)), title: '盾騎士は、歩いた向きに盾を構える', text: '正面の攻撃は防がれ押し返される。横へ回り込むと、追ってきた騎士の側面が空く。攻撃した直後も盾が下がる。' },
-    { id: 'anvil', when: s.props.some((p) => p.kind === 'anvil' && !p.used && visible.has(p.y * s.map.w + p.x)), title: '金床でGOLDを★に変える', text: '金床をタップすると費用を確認。強化したい装備の方向から金床へ押します。1か所につき1回。' },
+    { id: 'anvil', when: s.props.some((p) => p.kind === 'anvil' && !p.used && visible.has(p.y * s.map.w + p.x)), title: '金床でGOLDを★に変える', text: '強化したい装備の方向から金床へ押すと、強化される装備が表示されます。もう一度押すと確定。1か所につき1回。' },
     { id: 'gold', when: s.player.coins > 0, title: '拾ったGOLDは、次の金床へ', text: 'B2・B5・B8の金床で★強化に使えます。右上のGOLDを押すと、使い方をいつでも確認できます。' },
     { id: 'pedestal', when: s.props.some((p) => p.kind === 'pedestal' && p.item && visible.has(p.y * s.map.w + p.x)), title: '近づく方向も、装備選び', text: '台座へ押した方向の装備と交換。元の装備は台座に残り、同じ装備なら★強化。自由な並べ替えは階段で。' },
   ];

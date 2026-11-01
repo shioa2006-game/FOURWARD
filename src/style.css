@@ -244,7 +244,7 @@ button:focus-visible { outline: 2px solid #6fe2f0; outline-offset: 3px; }
 .pb .badge.you { top: -9px; left: -9px; width: auto; height: 30px; align-items: center; gap: 1px; }
 .pb .badge.you img { width: 30px; height: 30px; }
 .pb .badge.you b { font-size: 15px; font-weight: 900; color: #ffb0b8; text-shadow: 0 2px 0 #000, 0 0 4px #000; margin-left: -6px; }
-.pb .badge.b-death img { filter: drop-shadow(0 0 6px #ef4a5a) sepia(1) hue-rotate(-50deg) saturate(5); }
+.pb .badge.b-death img { filter: drop-shadow(0 0 6px #ef4a5a) drop-shadow(0 2px 0 #000); }
 .pb .badge.b-kill { animation: badgePulse 0.9s ease-in-out infinite; }
 .pb .badge.b-hurt, .pb .badge.b-death { animation: badgePulse 0.6s ease-in-out infinite; }
 .pb .badge.b-hit, .pb .badge.b-brace { width: 24px; height: 24px; top: -6px; right: -6px; opacity: 0.85; }
@@ -490,6 +490,7 @@ button:focus-visible { outline: 2px solid #6fe2f0; outline-offset: 3px; }
 .stats { display: flex; align-items: center; gap: 18px; font-size: 30px; }
 .stats .killer { width: 56px; height: 56px; }
 .stats2 { display: flex; gap: 16px; color: var(--muted); font-size: 16px; }
+.stats2 .total { font-size: 12px; letter-spacing: 2px; align-self: center; padding: 1px 6px; border: 1px solid var(--panel-edge); border-radius: 6px; }
 .guide { gap: 10px; max-width: 420px; }
 .g-row { display: flex; align-items: center; gap: 10px; width: 100%; }
 .g-row img { width: 34px; height: 34px; }

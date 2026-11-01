@@ -241,6 +241,8 @@ interface Maps {
   ground: Int32Array;
   fly: Int32Array;
   cache: Map<string, Int32Array>;
+  /** the tile the hero just stepped off (-1 if they did not move) */
+  trail: number;
 }
 
 function buildMaps(s: GameState): Maps {
@@ -250,6 +252,7 @@ function buildMaps(s: GameState): Maps {
     ground: bfsFrom(s, [pi], (i) => isWalkable(tiles[i])),
     fly: bfsFrom(s, [pi], (i) => isFlyable(tiles[i])),
     cache: new Map(),
+    trail: -1,
   };
 }
 
@@ -356,7 +359,7 @@ export function enemyPhase(ctx: Ctx, visible: Set<number>, playerMoveDir: Dir | 
     if (zoneOf(s, u).includes(pi)) attacking.add(u.id);
   }
   const maps = buildMaps(s);
-  void playerMoveDir;
+  if (playerMoveDir >= 0) maps.trail = (p.y - DY[playerMoveDir]) * w + (p.x - DX[playerMoveDir]);
   for (const u of order) {
     if (s.status !== 'play') return;
     if (!s.units.includes(u)) continue;
@@ -522,10 +525,10 @@ function act(ctx: Ctx, u: Unit, maps: Maps, visible: Set<number>): void {
     case 'chase':
       // shield-bearers keep their shield the way they walked: make them walk around you
       // and their flank is open
-      stepToward(ctx, u, d.flying ? maps.fly : maps.ground);
+      stepToward(ctx, u, d.flying ? maps.fly : maps.ground, maps.trail);
       break;
     case 'flank':
-      stepToward(ctx, u, flankMap(s, maps));
+      stepToward(ctx, u, flankMap(s, maps), maps.trail);
       break;
     case 'diag': {
       const m = diagMap(s, maps);
@@ -586,11 +589,13 @@ function hazardPenalty(s: GameState, x: number, y: number): number {
 }
 
 /**
- * Step to the neighbour with the lowest distance. Ties: LINE UP FIRST — close the
- * smaller non-zero gap to the hero before the larger one, so chasers arrive in a
- * straight line (where a lunge can meet them).
+ * Step to the neighbour with the lowest distance. Ties: FOLLOW THE FOOTSTEPS — a
+ * chaser the hero just stepped away from takes the tile they left, so walking away
+ * swings it round to another side instead of letting it shadow an unarmed one.
+ * Otherwise LINE UP FIRST — close the smaller non-zero gap to the hero before the
+ * larger one, so chasers arrive in a straight line (where a lunge can meet them).
  */
-export function stepToward(ctx: Ctx, u: Unit, dist: Int32Array): boolean {
+export function stepToward(ctx: Ctx, u: Unit, dist: Int32Array, trail = -1): boolean {
   const s = ctx.s;
   const p = s.player;
   const flying = def(u).flying;
@@ -604,6 +609,10 @@ export function stepToward(ctx: Ctx, u: Unit, dist: Int32Array): boolean {
   else if (ady === 0) order = [hx];
   else order = adx <= ady ? [hx, vy] : [vy, hx];
   for (const d of DIRS) if (!order.includes(d)) order.push(d);
+  if (trail >= 0) {
+    const onTrail = order.findIndex((d) => (u.y + DY[d]) * s.map.w + u.x + DX[d] === trail);
+    if (onTrail > 0) order.unshift(...order.splice(onTrail, 1));
+  }
   let best: Dir | -1 = -1;
   let bestScore = here < 0 ? 1e9 : here * 10 + hazardPenalty(s, u.x, u.y);
   for (const dir of order) {

@@ -77,6 +77,8 @@ class Game {
   undoState: string | null = null;
   previewMode = false;
   previewDir: Dir | -1 = -1;
+  /** this tab's own checkpoint: storage is shared with other tabs playing other runs */
+  checkpoint: string | null = null;
   lastViewport = '';
   lastViewportCheck = 0;
   seenLessons = new Set<string>((store.get('fourward.hints.v1') ?? '').split(',').filter(Boolean));
@@ -99,6 +101,7 @@ class Game {
       onReset: () => {
         store.del(SAVE_KEY);
         store.del(CP_KEY);
+        this.checkpoint = null;
         this.toTitle();
       },
       onRetryCheckpoint: () => this.retryCheckpoint(),
@@ -217,7 +220,7 @@ class Game {
     s.stats.startTime = Date.now();
     this.meta.runs++;
     this.saveMeta();
-    store.set(CP_KEY, JSON.stringify(s));
+    this.setCheckpoint(s);
     this.begin(s);
   }
 
@@ -233,17 +236,36 @@ class Game {
     }
   }
 
+  setCheckpoint(s: GameState): void {
+    this.checkpoint = JSON.stringify(s);
+    store.set(CP_KEY, this.checkpoint);
+  }
+
+  /** The checkpoint of `run` — never another run's (another tab may have saved its own). */
+  findCheckpoint(run: GameState | null): GameState | null {
+    if (!run) return null;
+    for (const raw of [this.checkpoint, store.get(CP_KEY)]) {
+      if (!raw) continue;
+      try {
+        const cp = JSON.parse(raw) as GameState;
+        if (cp.seed === run.seed && cp.floor === run.checkpointFloor) return cp;
+      } catch {
+        /* corrupted */
+      }
+    }
+    return null;
+  }
+
   retryCheckpoint(): void {
-    const raw = store.get(CP_KEY);
-    if (!raw) return this.toTitle();
-    const s = JSON.parse(raw) as GameState;
+    const s = this.findCheckpoint(this.state);
+    if (!s) return this.toTitle();
     s.player.hp = s.player.maxHp;
     for (const it of s.player.slots) if (it && it.id === 'flask') it.charges = ITEMS.flask.charges + it.star;
     const prev = this.state;
     s.stats.retries = (prev?.stats.retries ?? s.stats.retries) + 1;
     s.stats.kills = prev?.stats.kills ?? s.stats.kills;
     s.stats.turns = prev?.stats.turns ?? s.stats.turns;
-    store.set(CP_KEY, JSON.stringify(s));
+    this.setCheckpoint(s);
     this.begin(s);
   }
 
@@ -314,7 +336,10 @@ class Game {
     if (d >= 0 && this.state) this.hud.showItemCard(this.state, d as Dir);
   }
 
-  onDir(d: Dir, repeat: boolean): void {
+  /** direction of an anvil upgrade waiting for its confirming second press (-1: none) */
+  anvilArmed: Dir | -1 = -1;
+
+  onDir(d: Dir, repeat: boolean, confirmed = false): void {
     const s = this.state;
     if (this.screens.open && this.screens.kind === 'arrange') {
       if (!repeat) {
@@ -326,6 +351,19 @@ class Game {
     if (!s || this.screens.open) return;
     if (s.status !== 'play') return;
     if (this.previewMode) { if (!repeat) this.selectPreview(d); return; }
+    // An upgrade spends GOLD for good: the first press only shows what would be upgraded.
+    const pr = propAt(s, s.player.x + [0, 1, 0, -1][d], s.player.y + [-1, 0, 1, 0][d]);
+    const it = s.player.slots[d];
+    const upgrade = pr?.kind === 'anvil' && !pr.used && !!it && !it.star && s.player.coins >= (pr.price ?? 0);
+    if (upgrade && !confirmed && this.anvilArmed !== d) {
+      if (!repeat) {
+        this.anvilArmed = d;
+        this.hud.showAnvil(s, pr, d, true);
+        sfx('click');
+      }
+      return;
+    }
+    this.anvilArmed = -1;
     this.dismissLesson();
     this.hud.hideCard();
     initAudio();
@@ -369,7 +407,7 @@ class Game {
         this.meta.bestFloor = s.floor;
         this.saveMeta();
       }
-      if (zoneOfFloor(s.floor) !== zoneOfFloor(floorBefore)) store.set(CP_KEY, JSON.stringify(s));
+      if (zoneOfFloor(s.floor) !== zoneOfFloor(floorBefore)) this.setCheckpoint(s);
       // on the stairs: free rearrangement + a look at what waits below
       this.screens.arrange(s, () => {
         this.refresh();
@@ -476,7 +514,7 @@ class Game {
       setTimeout(() => {
         sfx('death');
         this.hud.setVisible(false);
-        this.screens.gameOver(s, !!store.get(CP_KEY));
+        this.screens.gameOver(s, !!this.findCheckpoint(s));
       }, 1100);
     }
   }
@@ -506,7 +544,7 @@ class Game {
     const d = this.previewDir;
     if (!this.previewMode || d < 0 || !this.previews?.[d]?.valid) return;
     this.setPreviewMode(false);
-    this.onDir(d as Dir, false);
+    this.onDir(d as Dir, false, true);
   }
 
   dismissLesson(): void {
@@ -581,7 +619,7 @@ class Game {
       press: (d: Dir) => this.onDir(d, false),
       newRun: (seed: number, kit: Kit = 'knight') => {
         const s = newRun(seed, kit);
-        store.set(CP_KEY, JSON.stringify(s));
+        this.setCheckpoint(s);
         this.begin(s);
       },
       busy: () => this.renderer.isBusy(),
@@ -667,7 +705,7 @@ class Game {
           buildFloor(s, floor);
           revealAround(s);
         }
-        store.set(CP_KEY, JSON.stringify(s));
+        this.setCheckpoint(s);
         this.begin(s);
       },
       /** move the hero to a free tile a few steps from the first monster of `kind` (screenshots / review) */
