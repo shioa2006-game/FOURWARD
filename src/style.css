@@ -28,6 +28,7 @@ html, body {
   touch-action: none;
   overscroll-behavior: none;
 }
+body { position: fixed; inset: 0; } /* iOS: keep the document itself from scrolling */
 #app { position: fixed; inset: 0; overflow: hidden; } /* main.ts pins it to visualViewport */
 #game { position: absolute; inset: 0; width: 100%; height: 100%; display: block; image-rendering: pixelated; }
 #ui { position: absolute; inset: 0; pointer-events: none; }

@@ -77,6 +77,8 @@ class Game {
   undoState: string | null = null;
   previewMode = false;
   previewDir: Dir | -1 = -1;
+  lastViewport = '';
+  lastViewportCheck = 0;
   seenLessons = new Set<string>((store.get('fourward.hints.v1') ?? '').split(',').filter(Boolean));
 
   constructor() {
@@ -128,8 +130,10 @@ class Game {
     // iOS Safari (esp. 26's floating toolbar) can leave fixed content under the browser
     // chrome or scrolled off the top: follow the visible area instead.
     window.visualViewport?.addEventListener('resize', () => this.layout());
-    window.visualViewport?.addEventListener('scroll', () => this.fitViewport());
-    window.addEventListener('scroll', () => { if (window.scrollX || window.scrollY) window.scrollTo(0, 0); });
+    window.visualViewport?.addEventListener('scroll', () => this.layout());
+    window.addEventListener('scroll', () => this.unscroll());
+    window.addEventListener('pageshow', () => this.layout());
+    document.addEventListener('visibilitychange', () => this.layout());
     this.renderer.onDamageShown = (ev) => {
       if (ev.id === 0 && this.state) {
         this.hpShown = null;
@@ -143,10 +147,25 @@ class Game {
     (window as any).__FOURWARD__ = this.testApi();
   }
 
+  /** The page itself never scrolls; undo any scroll the browser does on its own. */
+  unscroll(): void {
+    if (window.scrollX || window.scrollY) window.scrollTo(0, 0);
+    if (document.body.scrollTop || document.body.scrollLeft) document.body.scrollTop = document.body.scrollLeft = 0;
+  }
+
+  /** Visible-area geometry, as a string so the frame loop can spot changes cheaply. */
+  viewportSig(): string {
+    const vv = window.visualViewport;
+    const de = document.documentElement;
+    return vv ? `${vv.width},${vv.height},${vv.offsetTop},${vv.offsetLeft},${vv.scale}` : `${de.clientWidth},${de.clientHeight}`;
+  }
+
   /** Pin #app to the area the player can actually see (visualViewport), not the layout viewport. */
   fitViewport(): void {
     const app = document.getElementById('app') as HTMLElement;
     const vv = window.visualViewport;
+    this.unscroll();
+    this.lastViewport = this.viewportSig();
     // When the player pinch-zooms, keep the normal layout rather than chasing the zoom.
     const use = vv && Math.abs(vv.scale - 1) < 0.01;
     const w = use ? vv.width : document.documentElement.clientWidth;
@@ -526,6 +545,12 @@ class Game {
   }
 
   frame(t: number): void {
+    // iOS Safari (26) does not always fire visualViewport events when its toolbar
+    // changes, which left the HUD above the screen: poll as a backstop.
+    if (t - this.lastViewportCheck > 250) {
+      this.lastViewportCheck = t;
+      if (this.viewportSig() !== this.lastViewport || window.scrollY || document.body.scrollTop) this.layout();
+    }
     const s = this.state;
     let model: RenderModel | null = null;
     if (s) {
